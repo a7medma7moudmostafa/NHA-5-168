@@ -78,6 +78,52 @@ flowchart TB
     style INFERENCE fill:#e8f7ed,stroke:#29965b,stroke-width:2px
 
 ```
+## 🎯 Key Features
+* **Document Type Classification:** Automatically classifies documents into predefined types (e.g., Incident, Request, Problem, Change).
+* **Smart Routing (Top-3 Departments):** Recommends the 3 most likely departments to handle the document, complete with confidence scores.
+* **Human-in-the-Loop:** Flags uncertain or low-confidence documents for manual review.
+* **Cloud-Native Inference:** Fully deployed on AWS using serverless architecture for scalable, cost-effective inference.
+
+## 🛠️ Technology Stack
+* **Data Processing:** Pandas, NLTK, spaCy
+* **Baseline Modeling:** Scikit-learn (TF-IDF, Logistic Regression, Linear SVM)
+* **Advanced Modeling:** Hugging Face Transformers (DistilBERT fine-tuning)
+* **Experiment Tracking:** MLflow
+* **Backend & API:** Python (FastAPI / Inference Script)
+* **Cloud Deployment (AWS):** S3, SageMaker Serverless Endpoints, AWS Lambda, API Gateway, CloudWatch
+
+## 📂 Repository Structure
+```text
+NHA-5-168/
+├── README.md              # Project overview, setup instructions, and team info
+├── requirements.txt       # Python dependencies
+├── .gitignore             # Ignored files (data/, mlruns/, models/, etc.)
+├── config.yaml            # Centralized configurations and paths
+│
+├── data/                  # Local data folder (Not uploaded to GitHub)
+│   ├── raw/               # Raw downloaded datasets
+│   └── processed/         # Cleaned and split datasets (train/val/test)
+│
+├── notebooks/             # Jupyter notebooks for experimentation
+│   ├── 01_eda.ipynb       # Exploratory Data Analysis
+│   ├── 02_baseline.ipynb  # TF-IDF & Classical ML experiments
+│   └── 03_transformer.ipynb # DistilBERT experiments
+│
+├── src/                   # Production-ready source code
+│   ├── preprocess.py      # Text cleaning, filtering, and data splitting
+│   ├── train_baseline.py  # Baseline model training script
+│   ├── train_transformer.py # Transformer fine-tuning script
+│   ├── evaluate.py        # Evaluation metrics (Macro F1, Top-3, Confusion Matrix)
+│   └── predict.py         # Final inference function
+│
+├── aws/                   # Cloud deployment scripts
+│   ├── lambda_handler.py  # AWS Lambda function code
+│   └── deploy_endpoint.py # SageMaker deployment script
+│
+└── docs/
+    └── architecture.md    # System architecture diagrams and workflows
+
+```
 
 ## 📸 System in Action
 
