@@ -10,32 +10,95 @@ Organizations receive large volumes of incoming documents such as complaints, re
 
 This project builds an end-to-end **AI Document Classification & Routing System** that reads the text of an incoming document and automatically recommends the appropriate department to handle it. Low-confidence predictions are flagged for human review, ensuring a balanced approach between automation and human accuracy.
 
-## 🏗️ Visual Architecture
-![System Architecture](docs/architecture.png)
-*(Note: Replace with actual architecture diagram)*
+## 🏗️ System Architecture
 
-**Cloud Request Flow:**
-1. **Client/User** sends the document text via an HTTP request.
-2. **AWS API Gateway** receives the request and triggers **AWS Lambda**.
-3. **AWS Lambda** parses the payload and invokes the **SageMaker Serverless Endpoint**.
-4. The model inside SageMaker processes the text and returns the predicted Type, Top-3 Departments, Confidence Scores, and a Human Review Flag back through the Lambda to the user.
+```mermaid
+flowchart TB
+
+    subgraph ML["1. Machine Learning Pipeline"]
+        A["Customer Support Dataset"]
+        B["Data Preprocessing<br/>Cleaning & Tokenization"]
+        C["Feature Extraction<br/>TF-IDF"]
+        
+        D["Baseline Models<br/>Logistic Regression<br/>Linear SVM"]
+        E["Transformer Model<br/>DistilBERT Fine-Tuning"]
+        
+        F["Model Evaluation<br/>Accuracy / Precision / Recall / F1"]
+        G["MLflow<br/>Experiment Tracking"]
+        H["Trained Model Artifacts"]
+
+        A --> B
+        B --> C
+        C --> D
+        B --> E
+        D --> F
+        E --> F
+        F --> G
+        F --> H
+    end
+
+    subgraph AWS["2. AWS Cloud Deployment"]
+        I["Amazon S3<br/>Model Artifacts"]
+        J["Amazon SageMaker<br/>Serverless Endpoint"]
+        
+        H --> I
+        I --> J
+    end
+
+    subgraph INFERENCE["3. Real-Time Inference & Routing"]
+        K["User / Client Application"]
+        L["Amazon API Gateway"]
+        M["AWS Lambda<br/>Request Handler"]
+        N["Document Classification"]
+        O["Department Routing<br/>Top-3 Recommendations"]
+        P{"Confidence Score<br/>Above Threshold?"}
+        Q["Automatic Routing"]
+        R["Human-in-the-Loop<br/>Manual Review"]
+        S["Prediction Response<br/>Class + Department + Confidence"]
+
+        K --> L
+        L --> M
+        M --> J
+        J --> N
+        N --> O
+        O --> P
+        P -->|Yes| Q
+        P -->|No| R
+        Q --> S
+        R --> S
+    end
+
+    T["Amazon CloudWatch<br/>Logs & Monitoring"]
+
+    M -.-> T
+    J -.-> T
+
+    style ML fill:#eaf2ff,stroke:#3973c6,stroke-width:2px
+    style AWS fill:#fff2df,stroke:#d98b25,stroke-width:2px
+    style INFERENCE fill:#e8f7ed,stroke:#29965b,stroke-width:2px
+
+```
 
 ## 📸 System in Action
-*(Note: Replace placeholders with actual screenshots once the UI/Demo is ready)*
+
+*(screenshots once the UI/Demo is ready)*
 
 ### 1. Classification Results & Top-3 Departments
+
 *Shows the system predicting the document type and recommending the top 3 departments with confidence scores.*
-![Results Screenshot](docs/results_demo.png)
+
 
 ### 2. Human Review Flag (Low Confidence)
+
 *Demonstrates how the system flags a document for manual review when the confidence score falls below the accepted threshold.*
-![Human Review Screenshot](docs/human_review_demo.png)
+
 
 ## 📊 Model Performance Comparison
+
 All models are trained and evaluated on the exact same train/test splits. The table below highlights the actual final metrics achieved:
 
 | Model | Accuracy | Precision | Recall | F1-Score |
-| :--- | :---: | :---: | :---: | :---: |
+| --- | --- | --- | --- | --- |
 | **Logistic Regression** | TBD | TBD | TBD | TBD |
 | **Linear SVM** | TBD | TBD | TBD | TBD |
 | **DistilBERT (Advanced)** | TBD | TBD | TBD | TBD |
@@ -43,6 +106,7 @@ All models are trained and evaluated on the exact same train/test splits. The ta
 *(Note: Table values will be updated with actual numbers upon the completion of the training and evaluation phases.)*
 
 ## 🛠️ Technology Stack
+
 * **Data Processing:** Pandas, NLTK, spaCy
 * **Baseline Modeling:** Scikit-learn (TF-IDF, Logistic Regression, Linear SVM)
 * **Advanced Modeling:** Hugging Face Transformers (DistilBERT fine-tuning)
@@ -55,9 +119,11 @@ All models are trained and evaluated on the exact same train/test splits. The ta
 You can run this project locally without incurring AWS costs, or deploy it fully to the cloud.
 
 ### 1. Local Development (Without AWS)
-This mode uses a pre-trained/locally trained model and serves it via a local **FastAPI** application for testing.
+
+This mode uses a locally trained model and serves it via a local **FastAPI** application for testing.
 
 **Step 1: Clone the repository & install dependencies**
+
 ```bash
 git clone [https://github.com/nhahub/NHA-5-168.git](https://github.com/nhahub/NHA-5-168.git)
 cd NHA-5-168
