@@ -1,0 +1,129 @@
+# ==========================================================
+# AI Document Classification & Routing System - configuration
+# Every setting the code needs lives here (SRS FR-7).
+# No secrets in this file: AWS keys and API keys go in .env (NFR-5).
+# ==========================================================
+
+project:
+  name: document-routing
+  random_seed: 42                 # same seed everywhere -> same split and same results (NFR-3)
+
+# ---------------------------------------------------------- data
+data:
+  source_url: https://huggingface.co/datasets/Tobi-Bueck/customer-support-tickets
+  raw_path: data/raw/aa_dataset-tickets-multi-lang-5-2-50-version.csv
+  # In the cloud phase, change only the paths, e.g. s3://<bucket>/data/raw/... (FR-1, NFR-7)
+  processed_dir: data/processed
+
+  language: en                    # keep English rows only (FR-2)
+  text_fields: [subject, body]    # joined into one "text" column (FR-2)
+  text_separator: ". "
+  drop_columns: [answer]          # the agent's reply: using it would leak the answer (FR-2)
+
+  targets:
+    type: type                    # model 1: document type (DEC-1)
+    department: queue             # model 2: department (DEC-1)
+
+  # Label lists found in the English data (checked 2026-11-17, before de-duplication)
+  types: [Incident, Request, Problem, Change]
+  departments:
+    - Technical Support
+    - Product Support
+    - Customer Service
+    - IT Support
+    - Billing and Payments
+    - Returns and Exchanges
+    - Service Outages and Maintenance
+    - Sales and Pre-Sales
+    - Human Resources
+    - General Inquiry
+
+  cleaning:
+    normalize_whitespace: true
+    min_text_chars: 10            # drop near-empty tickets
+    remove_duplicates: true       # before splitting (FR-3, risk R-6)
+
+  split:                          # FR-3
+    train: 0.8
+    validation: 0.1
+    test: 0.1
+    stratify_by: queue
+
+# ---------------------------------------------------------- baseline models (FR-5)
+baseline:
+  tfidf:
+    lowercase: true
+    ngram_range: [1, 2]           # single words and word pairs
+    min_df: 2                     # ignore terms seen in only one ticket
+    max_features: 50000
+    sublinear_tf: true
+  logistic_regression:
+    C: 1.0
+    max_iter: 1000
+    class_weight: balanced        # departments are imbalanced (about 20x)
+  linear_svm:
+    C: 1.0
+    class_weight: balanced
+    calibration:                  # LinearSVC has no probabilities; calibration adds them
+      method: sigmoid
+      cv: 3
+
+# ---------------------------------------------------------- transformer model (FR-6)
+transformer:
+  model_name: distilbert-base-uncased
+  max_length: 256                 # longer texts are truncated (FR-14)
+  batch_size: 16
+  learning_rate: 2.0e-5
+  epochs: 3
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  fp16: true                      # only on a GPU (Colab); set false on CPU
+  early_stopping_patience: 1
+  metric_for_best_model: macro_f1
+
+# ---------------------------------------------------------- evaluation (FR-8, FR-11)
+evaluation:
+  top_k: 3
+  metrics: [accuracy, macro_f1, top_k_accuracy, per_class_report, confusion_matrix]
+  reference_baselines: [majority_class, most_frequent_top_k]
+  threshold_analysis:
+    start: 0.10
+    stop: 0.90
+    step: 0.05
+
+# ---------------------------------------------------------- inference (FR-12, FR-13)
+inference:
+  top_k: 3
+  review_threshold: 0.5           # DEC-5: starting value, final value from threshold analysis
+  max_length: 256                 # must match transformer.max_length
+
+# ---------------------------------------------------------- experiment tracking (FR-9, FR-10, DEC-6)
+mlflow:
+  tracking_uri: sqlite:///mlflow.db     # local; replaced by the SageMaker MLflow App ARN at the end
+  artifact_location: ./mlartifacts
+  experiment_name: document-routing
+  registered_models:
+    type: doc-type-classifier
+    department: department-router
+
+# ---------------------------------------------------------- local API (FR-15)
+api:
+  host: 127.0.0.1
+  port: 8000
+
+# ---------------------------------------------------------- logging (FR-17)
+logging:
+  level: INFO
+  file: logs/requests.log
+  log_document_text: false        # NFR-6: never store the document text
+
+# ---------------------------------------------------------- AWS (week 4, deployment phase)
+aws:
+  region: us-east-1
+  s3_bucket: null                 # set when the bucket is created
+  s3_prefix: document-routing
+  endpoint:
+    name: document-routing-endpoint
+    memory_size_mb: 3072          # serverless memory; maximum allowed is 6144
+    max_concurrency: 2
+  budget_alert_usd: 10            # NFR-4
