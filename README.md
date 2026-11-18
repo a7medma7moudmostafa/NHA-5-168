@@ -1,16 +1,26 @@
-# 📄 AI Document Classification & Routing System
+# AI Document Classification & Routing System
+
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![AWS](https://img.shields.io/badge/AWS-Cloud-orange.svg)
 ![MLflow](https://img.shields.io/badge/MLflow-Tracking-blue.svg)
 ![HuggingFace](https://img.shields.io/badge/HuggingFace-Transformers-yellow.svg)
 
-## 📌 Project Overview
-Organizations receive large volumes of incoming documents such as complaints, requests, and invoices. Manual sorting is slow, prone to errors, and scales poorly as document volume grows. 
+## 1. Project Overview
 
-This project builds an end-to-end **AI Document Classification & Routing System** that reads the text of an incoming document and automatically recommends the appropriate department to handle it. Low-confidence predictions are flagged for human review, ensuring a balanced approach between automation and human accuracy.
+Organizations handle different types of incoming documents every day, including complaints, service requests, incidents, and change requests. Sorting these documents manually can take time and may lead to incorrect assignments.
 
-## 🏗️ System Architecture
+This project focuses on building an AI-based system that classifies incoming documents based on their text content and recommends the most suitable department for each one.
+
+The system also considers prediction confidence. Documents with uncertain predictions are flagged for human review instead of being automatically processed.
+
+## 2. System Architecture
+
+The project consists of three main parts:
+
+1. **Machine Learning Pipeline:** Data preprocessing, feature extraction, model training, and evaluation.
+2. **AWS Deployment:** Storing trained model artifacts and hosting the inference endpoint.
+3. **Inference and Routing:** Receiving document text, generating predictions, and recommending the appropriate department.
 
 ```mermaid
 flowchart TB
@@ -19,10 +29,10 @@ flowchart TB
         A["Customer Support Dataset"]
         B["Data Preprocessing<br/>Cleaning & Tokenization"]
         C["Feature Extraction<br/>TF-IDF"]
-        
+
         D["Baseline Models<br/>Logistic Regression<br/>Linear SVM"]
         E["Transformer Model<br/>DistilBERT Fine-Tuning"]
-        
+
         F["Model Evaluation<br/>Accuracy / Precision / Recall / F1"]
         G["MLflow<br/>Experiment Tracking"]
         H["Trained Model Artifacts"]
@@ -37,24 +47,24 @@ flowchart TB
         F --> H
     end
 
-    subgraph AWS["2. AWS Cloud Deployment"]
+    subgraph AWS["2. AWS Deployment"]
         I["Amazon S3<br/>Model Artifacts"]
         J["Amazon SageMaker<br/>Serverless Endpoint"]
-        
+
         H --> I
         I --> J
     end
 
-    subgraph INFERENCE["3. Real-Time Inference & Routing"]
-        K["User / Client Application"]
+    subgraph INFERENCE["3. Inference and Routing"]
+        K["Client Application"]
         L["Amazon API Gateway"]
         M["AWS Lambda<br/>Request Handler"]
         N["Document Classification"]
-        O["Department Routing<br/>Top-3 Recommendations"]
-        P{"Confidence Score<br/>Above Threshold?"}
+        O["Department Recommendations<br/>Top 3"]
+        P{"Confidence Above<br/>Threshold?"}
         Q["Automatic Routing"]
-        R["Human-in-the-Loop<br/>Manual Review"]
-        S["Prediction Response<br/>Class + Department + Confidence"]
+        R["Human Review"]
+        S["Prediction Response<br/>Class, Department, Confidence"]
 
         K --> L
         L --> M
@@ -68,7 +78,7 @@ flowchart TB
         R --> S
     end
 
-    T["Amazon CloudWatch<br/>Logs & Monitoring"]
+    T["Amazon CloudWatch<br/>Logs and Monitoring"]
 
     M -.-> T
     J -.-> T
@@ -76,136 +86,168 @@ flowchart TB
     style ML fill:#eaf2ff,stroke:#3973c6,stroke-width:2px
     style AWS fill:#fff2df,stroke:#d98b25,stroke-width:2px
     style INFERENCE fill:#e8f7ed,stroke:#29965b,stroke-width:2px
-
 ```
-## 🎯 Key Features
-* **Document Type Classification:** Automatically classifies documents into predefined types (e.g., Incident, Request, Problem, Change).
-* **Smart Routing (Top-3 Departments):** Recommends the 3 most likely departments to handle the document, complete with confidence scores.
-* **Human-in-the-Loop:** Flags uncertain or low-confidence documents for manual review.
-* **Cloud-Native Inference:** Fully deployed on AWS using serverless architecture for scalable, cost-effective inference.
 
-## 🛠️ Technology Stack
-* **Data Processing:** Pandas, NLTK, spaCy
-* **Baseline Modeling:** Scikit-learn (TF-IDF, Logistic Regression, Linear SVM)
-* **Advanced Modeling:** Hugging Face Transformers (DistilBERT fine-tuning)
-* **Experiment Tracking:** MLflow
-* **Backend & API:** Python (FastAPI / Inference Script)
-* **Cloud Deployment (AWS):** S3, SageMaker Serverless Endpoints, AWS Lambda, API Gateway, CloudWatch
+## 3. Main Features
 
-## 📂 Repository Structure
+- **Document Classification:** Classifies incoming documents into predefined categories such as Incident, Request, Problem, and Change.
+- **Department Recommendation:** Returns the three most likely departments for each document, along with their confidence scores.
+- **Human Review:** Flags predictions with confidence scores below a defined threshold for manual review.
+- **Local and Cloud Inference:** Supports local testing and an AWS-based deployment setup.
+
+## 4. Technology Stack
+
+| Component | Technologies |
+|---|---|
+| Data Processing | Pandas, NLTK, spaCy |
+| Baseline Models | Scikit-learn, TF-IDF, Logistic Regression, Linear SVM |
+| Transformer Model | Hugging Face Transformers, DistilBERT |
+| Experiment Tracking | MLflow |
+| Backend and Local API | Python, FastAPI |
+| Cloud Storage | Amazon S3 |
+| Model Hosting | Amazon SageMaker Serverless Endpoints |
+| API and Request Handling | AWS Lambda, API Gateway |
+| Monitoring | Amazon CloudWatch |
+
+## 5. Repository Structure
+
 ```text
 NHA-5-168/
-├── README.md              # Project overview, setup instructions, and team info
-├── requirements.txt       # Python dependencies
-├── .gitignore             # Ignored files (data/, mlruns/, models/, etc.)
-├── config.yaml            # Centralized configurations and paths
 │
-├── data/                  # Local data folder (Not uploaded to GitHub)
-│   ├── raw/               # Raw downloaded datasets
-│   └── processed/         # Cleaned and split datasets (train/val/test)
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── config.yaml
 │
-├── notebooks/             # Jupyter notebooks for experimentation
-│   ├── 01_eda.ipynb       # Exploratory Data Analysis
-│   ├── 02_baseline.ipynb  # TF-IDF & Classical ML experiments
-│   └── 03_transformer.ipynb # DistilBERT experiments
+├── data/
+│   ├── raw/
+│   └── processed/
 │
-├── src/                   # Production-ready source code
-│   ├── preprocess.py      # Text cleaning, filtering, and data splitting
-│   ├── train_baseline.py  # Baseline model training script
-│   ├── train_transformer.py # Transformer fine-tuning script
-│   ├── evaluate.py        # Evaluation metrics (Macro F1, Top-3, Confusion Matrix)
-│   └── predict.py         # Final inference function
+├── notebooks/
+│   ├── 01_eda.ipynb
+│   ├── 02_baseline.ipynb
+│   └── 03_transformer.ipynb
 │
-├── aws/                   # Cloud deployment scripts
-│   ├── lambda_handler.py  # AWS Lambda function code
-│   └── deploy_endpoint.py # SageMaker deployment script
+├── src/
+│   ├── preprocess.py
+│   ├── train_baseline.py
+│   ├── train_transformer.py
+│   ├── evaluate.py
+│   └── predict.py
+│
+├── aws/
+│   ├── lambda_handler.py
+│   └── deploy_endpoint.py
 │
 └── docs/
-    └── architecture.md    # System architecture diagrams and workflows
-
+    └── architecture.md
 ```
 
-## 📸 System in Action
+**Note:** The `data/` directory is not included in the repository. The dataset should be downloaded separately before running the preprocessing scripts.
 
-*(screenshots once the UI/Demo is ready)*
+## 6. Dataset
 
-### 1. Classification Results & Top-3 Departments
+The project uses the **Customer Support Tickets** dataset by Tobias Bück.
 
-*Shows the system predicting the document type and recommending the top 3 departments with confidence scores.*
+The dataset is available through Kaggle and Hugging Face.
 
+The original dataset files are not included in this repository. Users need to download the dataset and place the files inside `data/raw/` before running the project.
 
-### 2. Human Review Flag (Low Confidence)
+Dataset licensing and usage conditions should be checked before redistribution or commercial use.
 
-*Demonstrates how the system flags a document for manual review when the confidence score falls below the accepted threshold.*
+## 7. Model Performance Comparison
 
+The project evaluates different approaches to document classification, starting with traditional machine learning models and then comparing them with a Transformer-based model.
 
-## 📊 Model Performance Comparison
-
-All models are trained and evaluated on the exact same train/test splits. The table below highlights the actual final metrics achieved:
+All models are evaluated using the same train/test split to make the comparison consistent.
 
 | Model | Accuracy | Precision | Recall | F1-Score |
-| --- | --- | --- | --- | --- |
-| **Logistic Regression** | TBD | TBD | TBD | TBD |
-| **Linear SVM** | TBD | TBD | TBD | TBD |
-| **DistilBERT (Advanced)** | TBD | TBD | TBD | TBD |
+|---|---|---|---|---|
+| Logistic Regression | TBD | TBD | TBD | TBD |
+| Linear SVM | TBD | TBD | TBD | TBD |
+| DistilBERT | TBD | TBD | TBD | TBD |
 
-*(Note: Table values will be updated with actual numbers upon the completion of the training and evaluation phases.)*
+*The metrics will be added after completing the final training and evaluation runs.*
 
-## 🛠️ Technology Stack
+## 8. Running the Project Locally
 
-* **Data Processing:** Pandas, NLTK, spaCy
-* **Baseline Modeling:** Scikit-learn (TF-IDF, Logistic Regression, Linear SVM)
-* **Advanced Modeling:** Hugging Face Transformers (DistilBERT fine-tuning)
-* **Experiment Tracking:** MLflow
-* **Backend & Local API:** Python, FastAPI (For local testing without AWS costs)
-* **Cloud Deployment (AWS):** S3, SageMaker Serverless Endpoints, AWS Lambda, API Gateway, CloudWatch
+The project can be tested locally without deploying the model to AWS. This setup uses a locally trained model and a FastAPI application to handle prediction requests.
 
-## 🚀 How to Run the Project
-
-You can run this project locally without incurring AWS costs, or deploy it fully to the cloud.
-
-### 1. Local Development (Without AWS)
-
-This mode uses a locally trained model and serves it via a local **FastAPI** application for testing.
-
-**Step 1: Clone the repository & install dependencies**
+### 8.1. Clone the Repository
 
 ```bash
-git clone [https://github.com/nhahub/NHA-5-168.git](https://github.com/nhahub/NHA-5-168.git)
+git clone https://github.com/nhahub/NHA-5-168.git
 cd NHA-5-168
-pip install -r requirements.txt
-
 ```
 
-**Step 2: Data Preprocessing & Training**
-*(Note: Requires placing the dataset in `data/raw/` first)*
+### 8.2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 8.3. Prepare the Dataset
+
+Download the dataset and place the required files inside:
+
+```text
+data/raw/
+```
+
+### 8.4. Run Preprocessing and Training
 
 ```bash
 python src/preprocess.py
 python src/train_baseline.py
-
 ```
 
-**Step 3: Run the Local API Server**
+### 8.5. Start the Local API
 
 ```bash
 uvicorn src.predict:app --reload
-
 ```
 
-You can now test predictions locally by sending POST requests to `http://localhost:8000/predict`.
+Once the server starts, the API will be available at:
 
-### 2. Cloud Production (AWS Deployment)
+```text
+http://localhost:8000
+```
 
-For production, the local FastAPI server is replaced by native AWS services.
+The prediction endpoint can be tested using POST requests:
 
-1. The trained model artifacts are uploaded to an **Amazon S3** bucket.
-2. The deployment script creates a **SageMaker Serverless Endpoint**.
-3. **AWS Lambda** and **API Gateway** are provisioned to expose the model securely over the internet.
+```text
+http://localhost:8000/predict
+```
 
-## 👥 Team Members
+## 9. AWS Deployment
 
-This project is developed for the **Digital Egypt Pioneers Initiative (DEPI)**.
+For the cloud deployment setup, the locally hosted inference service is replaced by AWS services.
 
-* **Ahmed Mahmoud Mostafa Abdelkarim** 
-* **Abdelrahman Mohamed Ezz** 
+The deployment workflow consists of the following steps:
+
+1. Upload the trained model artifacts to an Amazon S3 bucket.
+2. Create a SageMaker Serverless Endpoint to host the model.
+3. Configure an AWS Lambda function to handle incoming prediction requests.
+4. Expose the Lambda function through Amazon API Gateway.
+5. Use Amazon CloudWatch to monitor logs and execution activity.
+
+This setup separates model training from inference and allows the model to be accessed through an API.
+
+## 10. System Screenshots
+
+Screenshots and demo results will be added here once the application interface and testing workflow are ready.
+
+### 10.1. Classification Results
+
+This section will show an example of a document classification result, including the predicted document type and the top three department recommendations.
+
+### 10.2. Human Review
+
+This section will demonstrate how the system handles predictions with confidence scores below the selected threshold.
+
+## 11. Team Members
+
+This project was developed as part of the **Digital Egypt Pioneers Initiative (DEPI)**.
+
+- **Ahmed Mahmoud Mostafa Abdelkarim**
+- **Abdelrahman Mohamed Ezz**
