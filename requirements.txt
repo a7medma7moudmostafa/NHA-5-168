@@ -1,0 +1,38 @@
+# AI Document Classification & Routing System
+# Python 3.11 recommended
+# Install: pip install -r requirements.txt
+
+# ---------- Data processing ----------
+pandas>=2.0
+numpy>=1.24
+pyarrow>=14.0.1        # read/write .parquet files (data splits); 14.0.1 fixes CVE-2023-47248
+pyyaml>=6.0            # read config.yaml
+
+# ---------- Exploration and charts ----------
+matplotlib>=3.7
+seaborn>=0.13
+ipykernel>=6.0         # run the notebooks
+
+# ---------- Baseline models ----------
+scikit-learn>=1.3      # TF-IDF, Logistic Regression, Linear SVM, metrics
+
+# ---------- Transformer model ----------
+# On Google Colab, do NOT install torch from this file: Colab already has a GPU build.
+# Install only transformers, accelerate and mlflow there.
+torch>=2.1
+transformers>=4.40     # DistilBERT
+accelerate>=0.26       # required by the Hugging Face Trainer
+
+# ---------- Experiment tracking ----------
+mlflow>=3.10,<4       # match the MLflow version of SageMaker MLflow Apps (DEC-6)
+
+# ---------- Local API ----------
+fastapi>=0.110
+uvicorn>=0.27
+
+# ---------- AWS deployment ----------
+boto3>=1.34            # S3 uploads, calling the endpoint
+# SageMaker deployment tools are in requirements-aws.txt (Linux/Mac only)
+
+# ---------- Testing ----------
+pytest>=8.0

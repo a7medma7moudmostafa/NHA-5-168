@@ -1,0 +1,66 @@
+# ==========================================================
+# AI Document Classification & Routing System - .gitignore
+# ==========================================================
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# ---------- Virtual environments ----------
+.venv/
+venv/
+env/
+
+# ---------- Secrets (never commit) ----------
+.env
+.env.*
+*.pem
+.aws/
+credentials
+
+# ---------- Data (license CC BY-NC 4.0: not redistributed) ----------
+# Keep the folder structure, ignore the files inside
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# ---------- Trained models ----------
+models/
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.joblib
+*.pkl
+*.onnx
+model.tar.gz
+
+# ---------- MLflow ----------
+mlruns/
+mlartifacts/
+mlflow.db
+
+# ---------- Jupyter ----------
+.ipynb_checkpoints/
+
+# ---------- Logs ----------
+logs/
+*.log
+
+# ---------- Testing ----------
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---------- Editors ----------
+.vscode/
+.idea/
+
+# ---------- Operating system ----------
+Thumbs.db
+desktop.ini
+.DS_Store

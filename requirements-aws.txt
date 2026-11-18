@@ -1,0 +1,9 @@
+# Deployment and cloud tracking tools for AWS SageMaker
+# Run these on Linux or Mac (SageMaker Studio, Colab, or WSL), not on Windows:
+# the SageMaker Python SDK supports Unix/Linux and Mac only.
+# Install: pip install -r requirements-aws.txt
+
+-r requirements.txt
+
+sagemaker>=3.18,<4     # SDK v3 (ModelBuilder); v2 is deprecated and its API differs
+sagemaker-mlflow       # lets MLflow log to SageMaker MLflow Apps (DEC-6); pin after first install
